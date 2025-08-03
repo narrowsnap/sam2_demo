@@ -6,6 +6,7 @@
 import contextlib
 import logging
 import os
+import json
 import uuid
 from pathlib import Path
 from threading import Lock
@@ -282,6 +283,8 @@ class InferenceAPI:
         # Note that as this method is a generator, we also need to use autocast_context
         # in caller to this method to ensure that it's called under the correct context
         # (we've added `autocast_context` to `gen_track_with_mask_stream` in app.py).
+        frame2masks = {}
+        frame2masks2 = {}
         with self.autocast_context(), self.inference_lock:
             logger.info(
                 f"propagate in video in session {session_id}: "
@@ -317,6 +320,7 @@ class InferenceAPI:
                         rle_mask_list = self.__get_rle_mask_list(
                             object_ids=obj_ids, masks=masks_binary
                         )
+                        frame2masks[frame_idx] = [{'id': x.object_id, 'size': x.mask.size, 'rle': x.mask.counts} for x in rle_mask_list]
 
                         yield PropagateDataResponse(
                             frame_index=frame_idx,
@@ -342,6 +346,7 @@ class InferenceAPI:
                         rle_mask_list = self.__get_rle_mask_list(
                             object_ids=obj_ids, masks=masks_binary
                         )
+                        frame2masks[frame_idx] = [{'id': x.object_id, 'size': x.mask.size, 'rle': x.mask.counts} for x in rle_mask_list]
 
                         yield PropagateDataResponse(
                             frame_index=frame_idx,
@@ -353,6 +358,15 @@ class InferenceAPI:
                 logger.info(
                     f"propagation ended in session {session_id}; {self.__get_session_stats()}"
                 )
+                os.makedirs('results/RAPN/batch1', exist_ok=True)
+                print('***********************************')
+                # for k, v in frame2masks.items():
+                #     print(k, v)
+                #     break
+                # print(masks.shape)
+                name = self.predictor.video_path.split('/')[-1]
+                with open(f'results/RAPN/batch1/{name}.json', 'w') as f:
+                    json.dump(frame2masks, f)
 
     def cancel_propagate_in_video(
         self, request: CancelPropagateInVideoRequest
