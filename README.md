@@ -70,10 +70,31 @@ cd demo/backend/server/
 ./run.sh
 ```
 
-### 启动前段
+### 启动前端
 
 ```bash
 cd demo/frontend
 yarn install
 ./run.sh
 ```
+
+## 开始标注
+
+### 配置浏览器
+
+1. 使用demo需要chrome或者edge浏览器
+2. 搜索框输入：chrome://flags/；
+3. 搜索insecure，选择enable，配置http://192.168.31.20:7262/
+4. 重启浏览器
+
+### 加载网站
+
+访问：http://192.168.31.20:7262/
+
+### 点击track object完成后结果自动保存
+
+### 结果导出
+
+- 所有任务标注完成后，下载sam结果保存路径中的标注文件
+
+### 从准备数据开始分配新任务
